@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Prefer the smaller OSS model when available to reduce TPM pressure; fall back to 120b for tool calling.
 _PREFERRED_MODEL = "openai/gpt-oss-20b"
-_TOOL_MODEL = "openai/gpt-oss-120b"
+_TOOL_MODEL = "openai/gpt-oss-20b"
 
 _USERFacing_REPLACEMENTS = (
     (re.compile(r"\bdatabase\b", re.IGNORECASE), "my records"),
