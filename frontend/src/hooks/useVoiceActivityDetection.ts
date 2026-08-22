@@ -31,6 +31,7 @@ export const useVoiceActivityDetection = ({
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rAFRef = useRef<number | null>(null);
   const consecutiveFramesRef = useRef(0);
+  const hasCapturedFinalSpeechRef = useRef(false);
 
   // Use a ref for isBotSpeaking to avoid stale closures in monitorVolume
   const isBotSpeakingRef = useRef(isBotSpeaking);
@@ -41,6 +42,7 @@ export const useVoiceActivityDetection = ({
   const startRecording = useCallback(() => {
     if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'recording') return;
     chunksRef.current = [];
+    hasCapturedFinalSpeechRef.current = false;
     mediaRecorderRef.current.start();
   }, []);
 
@@ -163,7 +165,12 @@ export const useVoiceActivityDetection = ({
         mediaRecorder.onstop = () => {
           if (chunksRef.current.length > 0) {
             const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType });
-            onSpeechEnd?.(blob);
+            // Only send raw audio blob to Deepgram if Web Speech API didn't already transcribe it
+            if (!hasCapturedFinalSpeechRef.current) {
+              onSpeechEnd?.(blob);
+            } else {
+              console.log('[VAD] Skipping duplicate audio blob — already handled by browser STT');
+            }
             chunksRef.current = [];
           }
         };
@@ -180,6 +187,7 @@ export const useVoiceActivityDetection = ({
               if (event.results[i].isFinal) {
                 const finalPhrase = event.results[i][0].transcript.trim();
                 if (finalPhrase && !isBotSpeakingRef.current) {
+                  hasCapturedFinalSpeechRef.current = true;
                   console.log('[VAD/STT] Final transcript captured:', finalPhrase);
                   onFinalText?.(finalPhrase);
                 }
