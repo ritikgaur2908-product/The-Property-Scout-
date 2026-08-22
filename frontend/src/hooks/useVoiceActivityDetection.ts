@@ -218,10 +218,14 @@ export const useVoiceActivityDetection = ({
     };
   }, []);
 
+  const vadState: 'idle' | 'listening' | 'speaking' = isListening
+    ? (isSpeaking ? 'speaking' : 'listening')
+    : 'idle';
+
   return {
     isRecording: isListening,
     toggleListening,
-    vadState: isListening ? (isSpeaking ? 'speaking' : 'listening') : 'idle',
+    vadState,
     isLoading: false, // native API loads instantly
     isErrored: false,
   };

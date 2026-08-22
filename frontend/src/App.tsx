@@ -22,9 +22,6 @@ function App() {
   const [comparingIds, setComparingIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
 
-  // toggleListening ref — needed so onBotSpeakingEnd can call it without stale closure
-  const toggleListeningRef = useRef<(() => void) | null>(null);
-
   const {
     initSession,
     messages,
