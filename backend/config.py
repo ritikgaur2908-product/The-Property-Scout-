@@ -13,9 +13,9 @@ class Settings:
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
         "postgresql://postgres:postgres@localhost:5432/property_scout"
-    )
-    VECTOR_DB_URL: str = os.getenv("VECTOR_DB_URL", "http://localhost:6333")
-    VECTOR_DB_API_KEY: str = os.getenv("VECTOR_DB_API_KEY", "local-dev-key")
+    ).strip()
+    VECTOR_DB_URL: str = os.getenv("VECTOR_DB_URL", "http://localhost:6333").strip()
+    VECTOR_DB_API_KEY: str = os.getenv("VECTOR_DB_API_KEY", "local-dev-key").strip()
 
     # AI configuration
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
