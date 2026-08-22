@@ -238,11 +238,22 @@ export const useConversation = (options: UseConversationOptions = {}) => {
         }
       }
 
-      const response = await SessionAPI.createSession();
-      setSessionId(response.session_id);
-      localStorage.setItem('property_scout_session_id', response.session_id);
+      let newSessionId = '';
+      try {
+        const response = await SessionAPI.createSession();
+        newSessionId = response.session_id;
+      } catch (err) {
+        console.warn('REST session create failed, using client UUID fallback:', err);
+        newSessionId = typeof crypto !== 'undefined' && crypto.randomUUID 
+          ? crypto.randomUUID() 
+          : 'sess-' + Math.random().toString(36).substring(2, 11) + '-' + Date.now();
+      }
+      setSessionId(newSessionId);
+      localStorage.setItem('property_scout_session_id', newSessionId);
     } catch (error) {
       console.error('Failed to initialize session', error);
+      const fallbackId = 'sess-' + Date.now();
+      setSessionId(fallbackId);
     }
   }, []);
 

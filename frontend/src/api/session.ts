@@ -8,6 +8,7 @@ export const SessionAPI = {
   createSession: async (): Promise<SessionResponse> => {
     return fetchApi<SessionResponse>('/api/session', {
       method: 'POST',
+      body: '{}',
     });
   },
 
