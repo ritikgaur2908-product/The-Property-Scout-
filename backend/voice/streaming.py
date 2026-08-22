@@ -212,8 +212,10 @@ async def voice_stream(
 
             if full_response:
                 import re
-                # Clean markdown so TTS doesn't read "asterisk" or "hash"
-                clean_tts_text = re.sub(r'[*#_~`]', '', full_response)
+                # Clean markdown and numbered list prefixes so TTS doesn't read "1.", "2.", "asterisk", etc.
+                clean_tts_text = re.sub(r'^\s*\d+[\.\)]\s*', '', full_response)
+                clean_tts_text = re.sub(r'\n\s*\d+[\.\)]\s*', ' ', clean_tts_text)
+                clean_tts_text = re.sub(r'[*#_~`]', '', clean_tts_text).strip()
                 loop = asyncio.get_event_loop()
                 audio_bytes = await loop.run_in_executor(None, tts.synthesize_sync, clean_tts_text)
                 if audio_bytes:

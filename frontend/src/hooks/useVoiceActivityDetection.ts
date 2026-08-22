@@ -3,18 +3,20 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 interface UseVoiceActivityDetectionProps {
   onSpeechStart?: () => void;
   onSpeechEnd?: (audioBlob: Blob) => void;
-  onInterimText?: (text: string) => void; // Unused in this local implementation
+  onInterimText?: (text: string) => void;
+  onFinalText?: (text: string) => void;
   isBotSpeaking?: boolean;
 }
 
-const SILENCE_THRESHOLD_MS = 2500; // 2.5 seconds of silence ends the turn
-const VOLUME_THRESHOLD = 15; // Increased from 5 to ignore background static
-const SPEECH_FRAMES_REQUIRED = 5; // Requires sustained volume to avoid pops
+const SILENCE_THRESHOLD_MS = 1500; // 1.5 seconds of silence ends turn
+const VOLUME_THRESHOLD = 8; // Highly sensitive to voice while ignoring baseline hiss
+const SPEECH_FRAMES_REQUIRED = 2; // Fast speech trigger for short words like "2BHK"
 
 export const useVoiceActivityDetection = ({
   onSpeechStart,
   onSpeechEnd,
   onInterimText,
+  onFinalText,
   isBotSpeaking = false,
 }: UseVoiceActivityDetectionProps) => {
   const [isListening, setIsListening] = useState(false);
@@ -175,7 +177,13 @@ export const useVoiceActivityDetection = ({
           recognition.onresult = (event: any) => {
             let interim = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-              if (!event.results[i].isFinal) {
+              if (event.results[i].isFinal) {
+                const finalPhrase = event.results[i][0].transcript.trim();
+                if (finalPhrase && !isBotSpeakingRef.current) {
+                  console.log('[VAD/STT] Final transcript captured:', finalPhrase);
+                  onFinalText?.(finalPhrase);
+                }
+              } else {
                 interim += event.results[i][0].transcript;
               }
             }
@@ -207,7 +215,7 @@ export const useVoiceActivityDetection = ({
         console.error('Failed to start mic', err);
       }
     }
-  }, [isListening, monitorVolume, onSpeechEnd, onInterimText]);
+  }, [isListening, monitorVolume, onSpeechEnd, onInterimText, onFinalText]);
 
   useEffect(() => {
     return () => {
