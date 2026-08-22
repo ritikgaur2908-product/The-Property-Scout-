@@ -74,7 +74,7 @@ export const useConversation = (options: UseConversationOptions = {}) => {
 
   // WebSocket URL once session is ready
   const wsUrl = sessionId
-    ? `${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')}/api/voice/stream?session_id=${sessionId}`
+    ? `${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')}/api/voice/stream?session_id=${sessionId}&session_token=${sessionId}`
     : '';
 
   const { status, sendMessage, disconnect } = useWebSocket({

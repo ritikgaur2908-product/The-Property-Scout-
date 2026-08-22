@@ -73,7 +73,7 @@ async def voice_stream(
     """
     # ── Auth check ─────────────────────────────────────────────────────────
     if not settings.DEBUG:
-        token = session_token or websocket.headers.get("X-Session-Token", "")
+        token = session_token or session_id or websocket.headers.get("X-Session-Token", "")
         if not token:
             logger.warning("WS rejected — no session_token provided (session=%s)", session_id)
             await websocket.close(code=4001, reason="session_token is required")
