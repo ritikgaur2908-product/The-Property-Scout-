@@ -124,23 +124,13 @@ class Orchestrator:
             return None
 
         count = len(state.shortlist)
-        lines = [
-            f"Great news — I found {count} {'property' if count == 1 else 'properties'} matching your preferences:",
-            "",
-        ]
-        for index, prop in enumerate(state.shortlist[:5], start=1):
-            locality = prop.get("locality") or prop.get("address", "")
-            lines.append(
-                f"{index}. ₹{prop['rent']:,}/month · {prop['rooms']} BHK · {locality}"
-            )
-        lines.extend(
-            [
-                "",
-                "I've pulled up the full details on the right — take a look and let me know "
-                "if you'd like to refine the search or book a visit!",
-            ]
+        loc = ""
+        if state.preferences.get("localities"):
+            loc = f" in {', '.join(state.preferences['localities'])}"
+        return (
+            f"I found {count} {'property' if count == 1 else 'properties'} matching your preferences{loc}. "
+            "I've pulled up the listings on your right — take a look and let me know if you'd like to refine or book a visit!"
         )
-        return "\n".join(lines)
 
     async def _yield_final_response(
         self,
