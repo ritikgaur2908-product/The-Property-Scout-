@@ -18,20 +18,20 @@ class Settings:
     VECTOR_DB_API_KEY: str = os.getenv("VECTOR_DB_API_KEY", "local-dev-key").strip()
 
     # AI configuration
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GROQ_API_KEY: str = (os.getenv("GROQ_API_KEY") or os.getenv("LLM_API_KEY") or "").strip()
+    GEMINI_API_KEY: str = (os.getenv("GEMINI_API_KEY") or "").strip()
 
     # Voice configuration
-    DEEPGRAM_API_KEY: str = os.getenv("DEEPGRAM_API_KEY", "")
+    DEEPGRAM_API_KEY: str = (os.getenv("DEEPGRAM_API_KEY") or os.getenv("STT_API_KEY") or "").strip()
     PLAYHT_USER_ID: str = os.getenv("PLAYHT_USER_ID", "")
     PLAYHT_API_KEY: str = os.getenv("PLAYHT_API_KEY", "")
 
     # LLM Configurations
-    LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4o")
+    LLM_API_KEY: str = (os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY") or "").strip()
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "openai/gpt-oss-120b").strip()
 
     # Voice APIs
-    STT_API_KEY: str = os.getenv("STT_API_KEY", "")
+    STT_API_KEY: str = (os.getenv("STT_API_KEY") or os.getenv("DEEPGRAM_API_KEY") or "").strip()
     TTS_API_KEY: str = os.getenv("TTS_API_KEY", "")
 
     # Webhooks & Email Notifications (N8N)
