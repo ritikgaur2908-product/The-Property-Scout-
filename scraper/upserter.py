@@ -13,46 +13,53 @@ logger = logging.getLogger(__name__)
 def upsert_properties(properties_data: List[Dict]):
     """
     Takes a list of property dictionaries and upserts them into the database.
-    Uses source_id to check if property exists.
-    Also marks any properties not in the current scraped batch as 'unavailable'.
+    Optimized with batch lookups (chunks of 1,000) so large datasets process in seconds.
     """
     db = SessionLocal()
     try:
-        # Get all current source_ids in the batch
         scraped_source_ids = [str(p['source_id']) for p in properties_data if 'source_id' in p]
         
+        # 1. Batch lookup existing properties in chunks of 1,000 to avoid N+1 queries
+        existing_props = {}
+        chunk_size = 1000
+        for i in range(0, len(scraped_source_ids), chunk_size):
+            chunk = scraped_source_ids[i:i + chunk_size]
+            results = db.query(Property).filter(Property.source_id.in_(chunk)).all()
+            for p in results:
+                existing_props[p.source_id] = p
+
         upserted_count = 0
         new_count = 0
         
+        # 2. Process updates and new additions in-memory
         for data in properties_data:
             source_id = str(data.get('source_id'))
             if not source_id:
                 continue
                 
-            existing = db.query(Property).filter(Property.source_id == source_id).first()
-            if existing:
-                # Update existing record
+            if source_id in existing_props:
+                existing = existing_props[source_id]
                 for key, value in data.items():
                     setattr(existing, key, value)
                 existing.status = 'available'
                 upserted_count += 1
             else:
-                # Insert new record
                 new_prop = Property(**data)
                 new_prop.status = 'available'
                 db.add(new_prop)
                 new_count += 1
                 
-        # Mark properties not found in this run as unavailable
+        # 3. Mark old properties not in this batch as unavailable
         if scraped_source_ids:
-            unavailable_count = db.query(Property).filter(
-                Property.source_id.notin_(scraped_source_ids),
-                Property.status == 'available'
-            ).update({"status": "unavailable"}, synchronize_session=False)
-            logger.info(f"Marked {unavailable_count} old properties as unavailable.")
-            
+            for i in range(0, len(scraped_source_ids), chunk_size):
+                chunk = scraped_source_ids[i:i + chunk_size]
+                db.query(Property).filter(
+                    Property.source_id.notin_(chunk),
+                    Property.status == 'available'
+                ).update({"status": "unavailable"}, synchronize_session=False)
+
         db.commit()
-        logger.info(f"Successfully upserted: {upserted_count} updated, {new_count} inserted.")
+        logger.info(f"Successfully upserted: {upserted_count} updated, {new_count} inserted in bulk.")
         
     except Exception as e:
         db.rollback()
