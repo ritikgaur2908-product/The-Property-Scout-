@@ -135,11 +135,45 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     ? `${isSecure ? 'wss' : 'ws'}://${wsHost}/api/voice/stream?session_id=${sessionId}&session_token=${sessionId}`
     : '';
 
+  const nativeVoiceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const speakTextNative = useCallback((text: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/[*#_~`]/g, '');
+        const utterance = new SpeechSynthesisUtterance(clean);
+        const voices = window.speechSynthesis.getVoices();
+        const inVoice = voices.find(v => v.lang.includes('en-IN') || v.lang.includes('hi-IN')) || voices.find(v => v.lang.startsWith('en'));
+        if (inVoice) utterance.voice = inVoice;
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.onend = () => {
+          setIsBotSpeaking(false);
+          onBotSpeakingEndRef.current?.();
+        };
+        setIsBotSpeaking(true);
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('Speech synthesis error:', err);
+      }
+    }
+  }, []);
+
   const { status, sendMessage, disconnect } = useWebSocket({
     url: wsUrl,
     reconnect: true,
     onMessage: (data) => {
       if (data instanceof Blob) {
+        // Edge TTS audio bytes received — cancel any pending browser fallback
+        if (nativeVoiceTimeoutRef.current) {
+          clearTimeout(nativeVoiceTimeoutRef.current);
+          nativeVoiceTimeoutRef.current = null;
+        }
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+
         // Convert Blob -> ArrayBuffer for AudioContext.decodeAudioData
         data.arrayBuffer().then(buf => {
           audioQueueRef.current.push(buf);
@@ -163,6 +197,15 @@ export const useConversation = (options: UseConversationOptions = {}) => {
             timestamp: new Date(),
           }];
         });
+
+        // Set safety timer: if server audio bytes don't play within 2s, speak via native browser voice
+        if (nativeVoiceTimeoutRef.current) clearTimeout(nativeVoiceTimeoutRef.current);
+        nativeVoiceTimeoutRef.current = setTimeout(() => {
+          if (!isPlayingAudioRef.current) {
+            console.log('[Voice] Using browser SpeechSynthesis fallback');
+            speakTextNative(data.content);
+          }
+        }, 2000);
       } else if (data.type === 'shortlist') {
         setShortlist(data.properties);
         setHasPerformedSearch(true);
@@ -347,5 +390,6 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     removeFilter,
     disconnect,
     unlockAudio,
+    speakTextNative,
   };
 };

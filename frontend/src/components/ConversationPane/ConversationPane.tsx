@@ -21,6 +21,7 @@ interface ConversationPaneProps {
   interimText?: string;
   preferences?: Record<string, any>;
   vadState?: 'idle' | 'listening' | 'speaking';
+  onSpeakMessage?: (text: string) => void;
 }
 
 export const ConversationPane: React.FC<ConversationPaneProps> = ({
@@ -34,6 +35,7 @@ export const ConversationPane: React.FC<ConversationPaneProps> = ({
   interimText = '',
   preferences = {},
   vadState,
+  onSpeakMessage,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const transcriptEndRef = useRef<HTMLDivElement>(null);
@@ -108,9 +110,20 @@ export const ConversationPane: React.FC<ConversationPaneProps> = ({
             )}
             <div className={`conv-bubble conv-bubble-${msg.sender}`}>
               <p>{msg.text}</p>
-              <span className="conv-time">
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <span className="conv-time">
+                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                {msg.sender === 'bot' && onSpeakMessage && (
+                  <button
+                    onClick={() => onSpeakMessage(msg.text)}
+                    className="text-xs px-2 py-0.5 rounded bg-purple-900/40 hover:bg-purple-800/60 text-purple-300 transition-all flex items-center gap-1 border border-purple-500/30"
+                    title="Read Aloud"
+                  >
+                    🔊 Listen
+                  </button>
+                )}
+              </div>
             </div>
             {msg.sender === 'user' && (
               <div className="conv-avatar conv-avatar-user">👤</div>

@@ -35,6 +35,7 @@ function App() {
     interruptBot,
     removeFilter,
     unlockAudio,
+    speakTextNative,
   } = useConversation({});
 
   const { isRecording, toggleListening, isLoading, vadState } = useVoiceActivityDetection({
@@ -150,6 +151,7 @@ function App() {
             interimText={interimText}
             preferences={preferences}
             vadState={vadState}
+            onSpeakMessage={speakTextNative}
           />
 
           {hasPerformedSearch && (
