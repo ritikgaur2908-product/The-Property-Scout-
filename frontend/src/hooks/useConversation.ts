@@ -93,8 +93,9 @@ export const useConversation = (options: UseConversationOptions = {}) => {
   }, []);
 
   // WebSocket URL once session is ready
+  const defaultApiUrl = import.meta.env.VITE_API_URL || 'https://web-production-4b14e.up.railway.app';
   const wsUrl = sessionId
-    ? `${(import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/^http/, 'ws')}/api/voice/stream?session_id=${sessionId}&session_token=${sessionId}`
+    ? `${defaultApiUrl.replace(/^http/, 'ws')}/api/voice/stream?session_id=${sessionId}&session_token=${sessionId}`
     : '';
 
   const { status, sendMessage, disconnect } = useWebSocket({
