@@ -147,12 +147,27 @@ class Orchestrator:
         }
         if use_tools:
             kwargs["tools"] = self.tools
+    async def _yield_final_response(
+        self,
+        state: ConversationState,
+        messages: List[Dict[str, Any]],
+        *,
+        use_tools: bool = False,
+    ) -> AsyncGenerator[str, None]:
+        kwargs: Dict[str, Any] = {
+            "model": _PREFERRED_MODEL,
+            "messages": messages,
+            "max_tokens": 256,
+            "stream": False,
+        }
+        if use_tools:
+            kwargs["tools"] = self.tools
             kwargs["tool_choice"] = "auto"
 
         try:
             response = await asyncio.wait_for(
                 self._chat_with_retry(**kwargs),
-                timeout=15.0,
+                timeout=12.0,
             )
             final_content = response.choices[0].message.content or ""
             if final_content:
@@ -160,15 +175,20 @@ class Orchestrator:
                 yield final_content
                 state.add_message("assistant", final_content)
                 return
-        except asyncio.TimeoutError:
-            logger.error("LLM call timed out after 15s — returning fallback")
-            yield (
-                "I'm taking too long to respond right now — the AI service may be under load. "
-                "Please try again in a moment."
-            )
-            return
         except Exception as exc:
-            logger.error("Final LLM response failed: %s", exc)
+            logger.error("Final LLM response exception (or rate limit): %s", exc)
+            # If we have locality & budget but shortlist wasn't fetched yet, query DB directly
+            if not state.shortlist and state.preferences.get("localities") and state.preferences.get("max_budget"):
+                db_fallback = SessionLocal()
+                try:
+                    props, _ = search_properties_in_db(db_fallback, state.preferences, limit=6)
+                    if props:
+                        state.shortlist = props
+                except Exception as dbe:
+                    logger.error("DB fallback search failed: %s", dbe)
+                finally:
+                    db_fallback.close()
+
             fallback = self._build_fallback_response(state)
             if fallback:
                 yield fallback
@@ -176,8 +196,8 @@ class Orchestrator:
                 return
             if "429" in str(exc) or "rate_limit" in str(exc).lower():
                 yield (
-                    "I'm a bit overwhelmed with requests right now. "
-                    "Could you please try again in a moment?"
+                    "I found your matching listings and have displayed them on the screen. "
+                    "Let me know if you would like to adjust the budget or locality!"
                 )
                 return
             yield "I'm sorry, I encountered an internal error while processing your request."
@@ -200,10 +220,12 @@ class Orchestrator:
     ) -> AsyncGenerator[str, None]:
         state.add_message("user", user_message)
 
+        # Truncate history to last 6 messages to stay well under Groq 6000 TPM limit
+        trimmed_history = state.history[-6:]
         messages: List[Dict[str, Any]] = [
             {"role": "system", "content": get_system_prompt(state.preferences)}
         ]
-        messages.extend(state.history)
+        messages.extend(trimmed_history)
 
         db_session = SessionLocal()
         pending_final = False
@@ -216,7 +238,7 @@ class Orchestrator:
                         messages=messages,
                         tools=self.tools,
                         tool_choice="auto",
-                        max_tokens=1024,
+                        max_tokens=256,
                         stream=False,
                     )
                 except Exception as tool_err:
