@@ -1,0 +1,93 @@
+/* Stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-6);
+  padding: 0 var(--space-4);
+}
+
+.stepper-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 2px solid var(--color-border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  transition: var(--transition-all);
+  z-index: 2;
+}
+
+.stepper-circle.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-muted);
+}
+
+.stepper-circle.completed {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.stepper-line {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  margin: 0 -4px;
+  z-index: 1;
+  transition: var(--transition-all);
+}
+
+.stepper-line.completed {
+  background: var(--color-primary);
+}
+
+/* Slots Grid */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.slot {
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-all);
+  text-align: center;
+}
+
+.slot:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-muted);
+}
+
+.slot-selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.slot-selected:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  color: white;
+}
+
+.slot-booked {
+  opacity: 0.5;
+  background: var(--bg-surface);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}

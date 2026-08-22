@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Node/Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+.tsbuildinfo
+
+# Environment/Secrets
+.env
+.env.production
+.env.development
+.env.local
+
+# OS & Local DBs
+.DS_Store
+Thumbs.db
+*.db
+*.sqlite3
+
+# Temp scratch scripts
+get_models.py
+regex_test.py
+fix_imports.py
+bundle_sample.js
+bengaluru_raw.html

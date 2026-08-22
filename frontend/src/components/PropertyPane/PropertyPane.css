@@ -1,0 +1,42 @@
+.property-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.property-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.property-count {
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+.property-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.property-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-border);
+  gap: var(--space-2);
+}
+
+.property-empty-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}

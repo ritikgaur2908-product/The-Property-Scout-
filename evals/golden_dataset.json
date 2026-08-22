@@ -1,0 +1,285 @@
+[
+  {
+    "test_id": "TC_HP_001",
+    "category": "happy_path",
+    "description": "Standard search for 2BHK in Indiranagar under 45k",
+    "input_turns": [
+      "I'm looking for a 2BHK in Indiranagar, my budget is around 45k per month."
+    ],
+    "previous_state": {},
+    "expected_state": {
+      "min_bhk": 2,
+      "localities": ["Indiranagar"],
+      "max_budget": 45000,
+      "accommodation_type": "whole_flat"
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_HP_002",
+    "category": "happy_path",
+    "description": "Search for a male room in HSR Layout",
+    "input_turns": [
+      "I need a room in a pre-occupied flat in HSR Layout. I'm a guy, budget is 15k."
+    ],
+    "previous_state": {},
+    "expected_state": {
+      "localities": ["HSR Layout"],
+      "max_budget": 15000,
+      "accommodation_type": "room_in_flat",
+      "gender": "male"
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_HP_003",
+    "category": "happy_path",
+    "description": "Book a visit for a specific property",
+    "input_turns": [
+      "Book a visit for property PROP-TEST-001 for tomorrow at 10 AM. My email is test@example.com."
+    ],
+    "previous_state": {},
+    "expected_state": {},
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false,
+      "booking_test": true
+    }
+  },
+  {
+    "test_id": "TC_HP_004",
+    "category": "happy_path",
+    "description": "Search with specific amenities — parking near metro",
+    "input_turns": [
+      "Find me a 3BHK in Whitefield with parking and near a metro station."
+    ],
+    "previous_state": {},
+    "expected_state": {
+      "min_bhk": 3,
+      "localities": ["Whitefield"],
+      "parking": true
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_MT_001",
+    "category": "edge_case_edit",
+    "description": "User changes BHK requirement from 2 to 3 without dropping budget",
+    "input_turns": [
+      "I want a 2BHK in Koramangala, budget 50k.",
+      "Actually, make that a 3BHK instead."
+    ],
+    "previous_state": {
+      "min_bhk": 2,
+      "localities": ["Koramangala"],
+      "max_budget": 50000,
+      "accommodation_type": "whole_flat"
+    },
+    "expected_state": {
+      "min_bhk": 3,
+      "localities": ["Koramangala"],
+      "max_budget": 50000,
+      "accommodation_type": "whole_flat"
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_MT_002",
+    "category": "edge_case_edit",
+    "description": "User swaps locality without losing other filters",
+    "input_turns": [
+      "Show me 1BHKs in HSR Layout under 30k.",
+      "Check in Bellandur instead of HSR."
+    ],
+    "previous_state": {
+      "localities": ["HSR Layout"],
+      "max_budget": 30000,
+      "min_bhk": 1
+    },
+    "expected_state": {
+      "localities": ["Bellandur"],
+      "max_budget": 30000,
+      "min_bhk": 1
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_MT_003",
+    "category": "edge_case_edit",
+    "description": "User adds a vegetarian filter mid-conversation for a room without losing other state",
+    "input_turns": [
+      "I'm looking for a room in BTM Layout, I'm a female, budget 12k.",
+      "Oh, I forgot to mention — I need a vegetarian flat."
+    ],
+    "previous_state": {
+      "localities": ["BTM Layout"],
+      "max_budget": 12000,
+      "accommodation_type": "room_in_flat",
+      "gender": "female"
+    },
+    "expected_state": {
+      "localities": ["BTM Layout"],
+      "max_budget": 12000,
+      "accommodation_type": "room_in_flat",
+      "gender": "female",
+      "food": "veg"
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_MT_004",
+    "category": "edge_case_edit",
+    "description": "User removes budget constraint entirely mid-conversation",
+    "input_turns": [
+      "Show me 2BHKs in Jayanagar under 40k.",
+      "You know what, forget the budget limit. Just show me the best 2BHKs in Jayanagar."
+    ],
+    "previous_state": {
+      "localities": ["Jayanagar"],
+      "min_bhk": 2,
+      "max_budget": 40000
+    },
+    "expected_state": {
+      "localities": ["Jayanagar"],
+      "min_bhk": 2,
+      "max_budget": null
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_ADV_001",
+    "category": "adversarial",
+    "description": "Impossible request: 4BHK villa in Indiranagar for 15k — bot must acknowledge no results or unrealistic ask",
+    "input_turns": [
+      "I want a 4BHK independent house in Indiranagar for exactly 15 thousand per month."
+    ],
+    "previous_state": {},
+    "expected_state": {
+      "min_bhk": 4,
+      "localities": ["Indiranagar"],
+      "max_budget": 15000
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": true
+    }
+  },
+  {
+    "test_id": "TC_ADV_002",
+    "category": "adversarial",
+    "description": "Out-of-scope city request — bot must decline gracefully",
+    "input_turns": [
+      "Show me flats in Bandra, Mumbai."
+    ],
+    "previous_state": {},
+    "expected_state": {},
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": true
+    }
+  },
+  {
+    "test_id": "TC_ADV_003",
+    "category": "adversarial",
+    "description": "Contradictory food filters in same turn — bot must handle gracefully",
+    "input_turns": [
+      "I want a room in a flat that only allows vegetarians, but I eat chicken so they have to be okay with non-veg."
+    ],
+    "previous_state": {},
+    "expected_state": {
+      "accommodation_type": "room_in_flat",
+      "food": "non_veg"
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false
+    }
+  },
+  {
+    "test_id": "TC_FAIL_001",
+    "category": "failure_mode",
+    "description": "RAG query for an obscure locality with no indexed data — bot must express uncertainty",
+    "input_turns": [
+      "What is the safety like at night in Doddakallasandra?"
+    ],
+    "previous_state": {
+      "localities": ["Doddakallasandra"]
+    },
+    "expected_state": {
+      "localities": ["Doddakallasandra"]
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": true
+    }
+  },
+  {
+    "test_id": "TC_FAIL_002",
+    "category": "failure_mode",
+    "description": "Booking a non-existent property ID — bot must gracefully report failure",
+    "input_turns": [
+      "Book PROP-99999999 for me at 3 PM tomorrow. Email is test@example.com."
+    ],
+    "previous_state": {},
+    "expected_state": {},
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": false,
+      "booking_test": true,
+      "expect_booking_failure": true
+    }
+  },
+  {
+    "test_id": "TC_FAIL_003",
+    "category": "failure_mode",
+    "description": "Extremely vague input — bot must ask for clarification, not guess",
+    "input_turns": [
+      "I want a cheap house somewhere nice."
+    ],
+    "previous_state": {},
+    "expected_state": {},
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": true
+    }
+  },
+  {
+    "test_id": "TC_FAIL_004",
+    "category": "failure_mode",
+    "description": "Specific commute query not covered in RAG — bot must express uncertainty rather than hallucinate",
+    "input_turns": [
+      "How long does it take to drive from this property to Electronic City Phase 2 during morning peak hours?"
+    ],
+    "previous_state": {
+      "localities": ["HSR Layout"]
+    },
+    "expected_state": {
+      "localities": ["HSR Layout"]
+    },
+    "expected_behavior": {
+      "must_contain_ids": [],
+      "uncertainty_expected": true
+    }
+  }
+]

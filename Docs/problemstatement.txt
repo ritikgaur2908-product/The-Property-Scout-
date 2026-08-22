@@ -1,0 +1,180 @@
+Objective
+So we want to build an AI power voice bot which lets the user seek properties in bangalauru 
+The voice bot should collect users preference conversationally and provide the user with a list of properties, the list of properties should be data rich with each property having data about the property, nearby amenities and neighborhood practical guidance, the bot should let the user further filter down the listing, enable them to book a visit to the property they like reschedule the booking and cancel the booking, also they should be able to mail themselves the list of properties shortlisted 
+Scope of work
+Data Requirements 
+The system should ingest the data from https://bengaluru.rent/ and since the data is updated daily then it should be scraped daily through a scraper which will work with the help of github actions and data should be stored and updated  in a database 
+The data to be captured from bengaluru.rent should be active listing only, the data which is marked for for rent transparency and are explicitly marked "Not for rent should be ignored
+Every information around the property should be captured such as : 
+Accommodation Type 
+Whole Flat or Room in Flat 
+Rent 
+Rooms in property
+Move in time 
+Gender property is open for
+Parking available or not and how many 
+Food preference of the flatmate if looking for a room in flat 
+Smoking preference of the flatmate if looking for a room in flat 
+Property address
+Any PII should be scrubbed like owner or agent details
+For nearby amenities OpenStreetMap MCP should be used and nearby amenities should cover
+Daily Essentials and Retail
+Grocery stores and supermarkets
+Local markets and convenience shops
+Pharmacies and medical chemist stores
+Restaurants, cafes, and fast-food chains
+Health and Education
+Hospitals, urgent care, and medical clinics
+Schools, preschools, and educational institutions
+Colleges and professional training centers 
+Transport and Mobility
+Metro, bus, and public transit stops
+Taxi stands and auto-rickshaw stands
+EV charging stations and fuel pumps 
+Recreation and Community
+Public parks, green spaces, and walking tracks
+Children's play areas and sports facilities
+Gyms and fitness centers
+Banks, ATMs, and post offices
+For neighborhood practical guidance should come from real public sources and it should cover 
+Core Safety and Security Notes
+Crime types: Note property theft, scams, or violent incidents with realistic frequency.
+Safe zones: Identify well-lit streets, busy spots, and areas to avoid after dark.
+Emergency help: List local police stations, hospitals, and safe havens.
+Daily Life and Environment
+Noise levels: Report traffic sounds, train tracks, nightlife volume, and barking dogs.
+Cleanliness: Note trash management, street sweeping, and general upkeep.
+Pest issues: Mention local wildlife, stray animals, or seasonal bugs.
+Getting Around and Access
+Walkability: Check sidewalk quality, crosswalk safety, and steep hills.
+Public transit: Detail bus or train stop safety, wait times, and reliability.
+Parking: Explain street rules, permit needs, and garage security. 
+Local Culture and Community
+Vibe: Describe if the area is quiet, loud, family-heavy, or student-driven.
+Friendliness: Share if neighbors say hello or keep strictly to themselves.
+Noise curfews: Note local social habits regarding late-night noise.
+The system would scrape public blogs, forums (like Reddit threads about Bengaluru neighborhoods), and news articles once (or update them monthly), chunk them, and store them in a Vector DB. When the LLM looks at a flat in "Indiranagar," it pulls the RAG chunks for Indiranagar to give cited, practical guidance. 
+Sample websites which might help - https://blrexplorer.littlemadcow.xyz/
+
+Booking data 
+Booking related information should also be stored in a database 
+Evals
+# Project Objective
+Build an offline automated evaluation suite for a Bengaluru Real Estate AI Voice Bot. The pipeline must programmatically score model outputs across three required evaluation dimensions: Feasibility, Edit Correctness, and Grounding & Hallucination.
+
+
+# Technical Requirements
+- The evaluation suite must be completely runnable via CLI (e.g., using `pytest` or a custom Python script `run_evals.py`).
+- The suite must execute deterministically against a static "Golden Dataset" (`golden_dataset.json`) of mock conversational scenarios and state JSONs.
+- Uses a hybrid evaluation model: Rule-based programmatic assertions combined with LLM-as-a-Judge API calls.
+
+
+---
+
+
+# Evaluation Specifications
+
+
+Please implement the logic for the following three mandatory evaluation modules:
+
+
+## 1. Feasibility Eval
+**Objective:** Verify that recommended properties respect hard user constraints and contain realistic commute claims.
+* **Budget & Must-Haves (Rule-Based):**
+  - Input: Extracted user constraints (`max_budget`, `bhk`, `amenities`) and recommended property JSON.
+  - Logic: Assert that `property.price <= user.max_budget` AND `property.bhk == user.bhk`. Mark test as FAIL if any returned property violates these hard constraints.
+* **Commute Claims (LLM-Assisted):**
+  - Input: Stated user workplace (e.g., "Koramangala"), recommended property location (e.g., "Whitefield"), and bot response text.
+  - Logic: Send prompt to LLM Judge asking: *"Is the bot's commute claim realistic given Bengaluru traffic geography? Return PASS or FAIL with a 1-sentence explanation."*
+
+
+## 2. Edit Correctness Eval
+**Objective:** Ensure multi-turn conversational edits modify ONLY the target parameters without dropping existing context.
+* **State Tracking (Rule-Based):**
+  - Input: `Previous_State_JSON`, User Edit Utterance (e.g., "Increase budget to 60k"), and `Updated_State_JSON`.
+  - Logic: Assert that the targeted key (`budget`) is modified correctly, AND assert that all un-targeted keys (`location`, `bhk`, `amenities`) remain strictly identical. Mark test as FAIL if un-targeted keys are wiped, set to null, or altered.
+
+
+## 3. Grounding & Hallucination Eval
+**Objective:** Prevent the bot from fabricating non-existent listings or neighborhood facts.
+* **Listing Validity (Rule-Based):**
+  - Input: Bot output JSON containing recommended property IDs.
+  - Logic: Assert that each `property_id` exists in the local mock database AND that its `status == "available"`.
+* **RAG Source Grounding (LLM-Assisted):**
+  - Input: Retrieved RAG text chunks (neighborhood data) and bot response text.
+  - Logic: Prompt LLM Judge to check: *"Are all claims about neighborhood amenities fully supported by the provided context chunks? Assign a score from 1 to 5."*
+* **Uncertainty Handling (Rule-Based):**
+  - Input: Bot response when RAG context is empty.
+  - Logic: Assert that the response contains explicit safety/uncertainty keywords (e.g., "I don't have information on", "I am unsure") rather than inventing details.
+
+
+---
+
+
+# Dataset Generation Requirements (`golden_dataset.json`)
+
+
+Generate a test dataset file named `golden_dataset.json` with 12–15 test cases across 4 specific categories:
+
+
+1. **Happy Paths (3-4 cases):** Standard searches in popular areas (e.g., HSR Layout, Indiranagar) and straightforward booking requests.
+2. **Multi-Turn Edit Edge Cases (3-4 cases):** Users updating budget mid-conversation, changing locality mid-stream, or adding new must-have filters without changing previous constraints.
+3. **Adversarial & Out-of-Bounds (3 cases):** Unrealistic budget requests (e.g., 4BHK villa in Indiranagar for 15,000 INR), geographically impossible commute claims, or contradictory filters.
+4. **Failure Modes & RAG Edge Cases (3 cases):** Requests where neighborhood RAG data is completely missing, requests for sold/unavailable property IDs, or ambiguous inputs.
+
+
+### Test Case JSON Schema
+Each entry in `golden_dataset.json` must strictly follow this structure:
+```json
+{
+  "test_id": "TC_001",
+  "category": "edge_case_edit",
+  "description": "User changes BHK requirement from 2 to 3 without dropping budget",
+  "input_turns": [],
+  "previous_state": {},
+  "expected_state": {},
+  "expected_behavior": {
+    "must_contain_ids": [],
+    "uncertainty_expected": false
+  }
+}
+# Iteration Depth & Logging (For AI Evals)
+- The `run_evals.py` script must save test run outputs as timestamped JSON reports (e.g., `eval_log_v1.json`).
+- This will allow tracking evaluation score improvements (baseline vs. fine-tuned prompt performance) to prove iteration depth.
+Product Capabilities 
+Preference collection 
+The voice bot should greet the user and should collect user preferences which should be voice based and based on the preferences collected the data should be fetched and enriched with  nearby amenities and neighborhood practical guidance and reasoning for why listing was picked (Explanations must be grounded, not generic) shown to the user 
+Voice-Based Shortlist Refinement
+The should be shown filters for guidance so that they can further refine the list and it should be voice based too example 
+"Drop anything above 40k."
+"Only show me places within 15 minutes of a metro station."
+"I need something pet-friendly."
+"Add one more option with a balcony."
+Only the affected part of the shortlist should change.
+Book/reschedule/cancel a site visit
+Use a Unique Booking ID instead of a full login system and assign a unique id to a user when a visit is booked and this id will help them cancel or reschedule too 
+To prevent two users from booking the same property at the exact same time a database should store booking related information 
+Notification 
+Whenever a user books, reschedules, cancels a booking or decides to send them the list of properties they should receive an email on their inbox 
+The email should be triggered from a specific email with receptive subject and content according to the intent
+The notification should be triggered from the N8N workflow which will be triggered on booking, reschedules, cancels a booking or decides to send them the list of properties
+
+UI & UX 
+The system should greet the user as they try to start a conversation 
+It should have transcript of every message of the conversation
+Shortlist cards with all the enriched data 
+A "Sources" or "References" section showing where each neighborhood claim came from
+If listing, amenity, or neighborhood data is missing or unreliable, the system must say so, not guess
+Filters to further refine the shortlist 
+A user should be shown options to mail the list to themselves or book a visit to any property 
+Conversation end flow 
+As the initial shortlist has been created the bot should be shifted to the left of the screen and the data should be in the right pane and conversation should go in the left pane
+
+Deployment and Code Quality
+
+# Deployment & Code Quality
+- **Hosting:** Frontend deployed on Vercel / Netlify; Backend API hosted on Render / Railway / Docker container.
+- **Code Standards:** 
+  - Modular architecture separating RAG logic, Voice processing, MCP tools, and Database models.
+  - Environment variables (`.env`) used strictly for API keys, database credentials, and webhooks.
+  - Type-safe interfaces or clear schemas across API routes.

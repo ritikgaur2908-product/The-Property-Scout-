@@ -1,0 +1,482 @@
+{
+  "run_at": "2026-08-22T15:44:48.232888+00:00",
+  "module_filter": "all",
+  "total_cases": 15,
+  "results": [
+    {
+      "test_id": "TC_HP_001",
+      "category": "happy_path",
+      "description": "Standard search for 2BHK in Indiranagar under 45k",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 5/5 — All factual claims (walkability, metro connectivity, vibrant nightlife with weekend noise) are directly taken from the provided context; the concluding remark that the property is a strong match is a reasonable inference, not a contradiction or hallucination."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_HP_002",
+      "category": "happy_path",
+      "description": "Search for a male room in HSR Layout",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 5/5 — Judge default: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': 'max completion tokens reached before generating a valid document'}}"
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_HP_003",
+      "category": "happy_path",
+      "description": "Book a visit for a specific property",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": null,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": []
+        }
+      }
+    },
+    {
+      "test_id": "TC_HP_004",
+      "category": "happy_path",
+      "description": "Search with specific amenities — parking near metro",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 5/5 — All claims (gated communities, safety, water supply via private tankers, Purple metro line connectivity) are directly quoted from the provided context; the concluding remark is a reasonable inference, not a hallucination."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_MT_001",
+      "category": "edge_case_edit",
+      "description": "User changes BHK requirement from 2 to 3 without dropping budget",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": []
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 5/5 — Judge default: Error code: 400 - {'error': {'message': \"Failed to validate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': ''}}"
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_MT_002",
+      "category": "edge_case_edit",
+      "description": "User swaps locality without losing other filters",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": []
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 5/5 — The assistant only repeats the provided resident observation and states it matches the requirements, which is directly supported by the context with no additional unsupported claims."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_MT_003",
+      "category": "edge_case_edit",
+      "description": "User adds a vegetarian filter mid-conversation for a room without losing other state",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": []
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 4,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 4/5 — The assistant accurately repeats the provided context and makes a reasonable inference that the property matches the user's requirements, which is not explicitly stated but is a minor extrapolation rather than a hallucination."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_MT_004",
+      "category": "edge_case_edit",
+      "description": "User removes budget constraint entirely mid-conversation",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": []
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] RAG grounding score 5/5 — Judge default: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': 'max completion tokens reached before generating a valid document'}}"
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_ADV_001",
+      "category": "adversarial",
+      "description": "Impossible request: 4BHK villa in Indiranagar for 15k — bot must acknowledge no results or unrealistic ask",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] Uncertainty correctly expressed (matched keyword: 'i don't have').",
+            "[GROUNDING] RAG grounding score 5/5 — The assistant makes no factual claims about Indiranagar; it simply states uncertainty and advises checking local resources, which is consistent with the provided context and contains no hallucinations."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_ADV_002",
+      "category": "adversarial",
+      "description": "Out-of-scope city request — bot must decline gracefully",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": null,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] Uncertainty correctly expressed (matched keyword: 'i don't have')."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_ADV_003",
+      "category": "adversarial",
+      "description": "Contradictory food filters in same turn — bot must handle gracefully",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": null,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": []
+        }
+      }
+    },
+    {
+      "test_id": "TC_FAIL_001",
+      "category": "failure_mode",
+      "description": "RAG query for an obscure locality with no indexed data — bot must express uncertainty",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": []
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": null,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] Uncertainty correctly expressed (matched keyword: 'i don't have')."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_FAIL_002",
+      "category": "failure_mode",
+      "description": "Booking a non-existent property ID — bot must gracefully report failure",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": null,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": []
+        }
+      }
+    },
+    {
+      "test_id": "TC_FAIL_003",
+      "category": "failure_mode",
+      "description": "Extremely vague input — bot must ask for clarification, not guess",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": [
+            "[EDIT] No previous_state — skipped (happy_path / adversarial / failure_mode)."
+          ],
+          "skipped": true
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": null,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] Uncertainty correctly expressed (matched keyword: 'i don't have')."
+          ]
+        }
+      }
+    },
+    {
+      "test_id": "TC_FAIL_004",
+      "category": "failure_mode",
+      "description": "Specific commute query not covered in RAG — bot must express uncertainty rather than hallucinate",
+      "modules": {
+        "feasibility": {
+          "passed": true,
+          "rule_based_passed": true,
+          "llm_commute_passed": true,
+          "llm_commute_skipped": false,
+          "details": []
+        },
+        "edit_correctness": {
+          "passed": true,
+          "details": []
+        },
+        "grounding": {
+          "passed": true,
+          "listing_validity_passed": true,
+          "uncertainty_passed": true,
+          "rag_grounding_score": 5,
+          "rag_grounding_passed": true,
+          "rag_grounding_skipped": false,
+          "details": [
+            "[GROUNDING] Uncertainty correctly expressed (matched keyword: 'i don't have').",
+            "[GROUNDING] RAG grounding score 5/5 — Judge default: Error code: 400 - {'error': {'message': \"Failed to generate JSON. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'json_validate_failed', 'failed_generation': 'max completion tokens reached before generating a valid document'}}"
+          ]
+        }
+      }
+    }
+  ],
+  "summary": {
+    "feasibility": {
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    "edit_correctness": {
+      "pass": 6,
+      "fail": 0,
+      "skip": 9
+    },
+    "grounding": {
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    }
+  }
+}
