@@ -28,48 +28,68 @@ export const useConversation = (options: UseConversationOptions = {}) => {
   // Pending greeting flag — send greeting once WS opens if start was clicked
   const pendingGreetingRef = useRef(false);
 
-  // Sequential Audio Queue — prevents overlapping audio chunks
-  const audioQueueRef = useRef<Blob[]>([]);
+  // AudioContext — unlocked on first user gesture, then free to play anytime.
+  // This bypasses Chrome/Safari autoplay restrictions that block new Audio().play()
+  // when called from an async WebSocket handler (gesture trust window already expired).
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioQueueRef = useRef<ArrayBuffer[]>([]);
   const isPlayingAudioRef = useRef(false);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const onBotSpeakingEndRef = useRef(onBotSpeakingEnd);
   onBotSpeakingEndRef.current = onBotSpeakingEnd;
 
-  const processAudioQueue = useCallback(() => {
-    if (isPlayingAudioRef.current || audioQueueRef.current.length === 0) {
-      return;
+  /**
+   * Call this synchronously inside a user gesture (button click) to unlock
+   * the AudioContext so later async .play() calls succeed.
+   */
+  const unlockAudio = useCallback(() => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
     }
+    if (audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(() => {});
+    }
+  }, []);
 
-    const nextBlob = audioQueueRef.current.shift();
-    if (!nextBlob) return;
+  const processAudioQueue = useCallback(async () => {
+    if (isPlayingAudioRef.current || audioQueueRef.current.length === 0) return;
+
+    const ctx = audioCtxRef.current;
+    if (!ctx) return;
 
     isPlayingAudioRef.current = true;
     setIsBotSpeaking(true);
 
-    const audioUrl = URL.createObjectURL(nextBlob);
-    const audio = new Audio(audioUrl);
-    currentAudioRef.current = audio;
+    const nextBuffer = audioQueueRef.current.shift();
+    if (!nextBuffer) { isPlayingAudioRef.current = false; return; }
 
     const onDone = () => {
-      URL.revokeObjectURL(audioUrl);
       isPlayingAudioRef.current = false;
-      currentAudioRef.current = null;
       if (audioQueueRef.current.length > 0) {
         processAudioQueue();
       } else {
         setIsBotSpeaking(false);
-        // Auto-activate mic when bot finishes speaking
         onBotSpeakingEndRef.current?.();
       }
     };
 
-    audio.onended = onDone;
-    audio.onerror = onDone;
-
-    audio.play().catch(err => {
-      console.error("Audio playback error:", err);
-      onDone();
-    });
+    try {
+      const decoded = await ctx.decodeAudioData(nextBuffer);
+      const source = ctx.createBufferSource();
+      source.buffer = decoded;
+      source.connect(ctx.destination);
+      source.onended = onDone;
+      activeSourceRef.current = source;
+      source.start(0);
+    } catch (err) {
+      console.error('AudioContext playback error:', err);
+      // Fallback to new Audio() as last resort
+      const blob = new Blob([nextBuffer], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => { URL.revokeObjectURL(url); onDone(); };
+      audio.onerror = () => { URL.revokeObjectURL(url); onDone(); };
+      audio.play().catch(() => onDone());
+    }
   }, []);
 
   // WebSocket URL once session is ready
@@ -82,8 +102,12 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     reconnect: true,
     onMessage: (data) => {
       if (data instanceof Blob) {
-        audioQueueRef.current.push(data);
-        processAudioQueue();
+        // Convert Blob -> ArrayBuffer for AudioContext.decodeAudioData
+        data.arrayBuffer().then(buf => {
+          audioQueueRef.current.push(buf);
+          processAudioQueue();
+        });
+        return;
       } else if (data.type === 'user_text') {
         setMessages(prev => [...prev, {
           id: `usr-${Date.now()}`,
@@ -129,12 +153,14 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     }
   });
 
+  // Track active AudioBufferSourceNode for barge-in interruption
+  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
   const interruptBot = useCallback(() => {
     console.log('[WS] Interrupting bot audio');
-    if (currentAudioRef.current) {
-      currentAudioRef.current.pause();
-      currentAudioRef.current.currentTime = 0;
-      currentAudioRef.current = null;
+    if (activeSourceRef.current) {
+      try { activeSourceRef.current.stop(); } catch (_) {}
+      activeSourceRef.current = null;
     }
     audioQueueRef.current = [];
     isPlayingAudioRef.current = false;
@@ -271,5 +297,6 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     interruptBot,
     removeFilter,
     disconnect,
+    unlockAudio,
   };
 };

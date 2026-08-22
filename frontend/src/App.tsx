@@ -34,6 +34,7 @@ function App() {
     triggerGreeting,
     interruptBot,
     removeFilter,
+    unlockAudio,
   } = useConversation({});
 
   const { isRecording, toggleListening, isLoading, vadState } = useVoiceActivityDetection({
@@ -76,6 +77,9 @@ function App() {
   }, [currentView, isRecording, toggleListening, isLoading]);
 
   const handleStartConversation = useCallback((initialMessage?: string) => {
+    // Unlock AudioContext synchronously during the user gesture so browser
+    // autoplay policy doesn't block the bot's async voice response.
+    unlockAudio();
     setCurrentView('conversation');
     if (initialMessage) {
       sendTextMessage(initialMessage);
@@ -83,7 +87,7 @@ function App() {
       // Trigger the spoken voice greeting from the bot
       triggerGreeting();
     }
-  }, [sendTextMessage, triggerGreeting]);
+  }, [sendTextMessage, triggerGreeting, unlockAudio]);
 
   const handleSendMessage = useCallback((text: string) => {
     sendTextMessage(text);
