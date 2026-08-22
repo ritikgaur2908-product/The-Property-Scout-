@@ -24,17 +24,18 @@ app = FastAPI(
 )
 
 # ── CORS — locked to frontend origin in production ─────────────────────────
-# Set FRONTEND_URL in .env for production (e.g. https://thepropertyscout.in).
-# Falls back to localhost:5173 (Vite dev server) if not set.
-_raw_origins = os.getenv("FRONTEND_URL", "http://localhost:5173")
+_raw_origins = os.getenv("FRONTEND_URL", "http://localhost:5173,https://the-property-scout-two.vercel.app")
 ALLOWED_ORIGINS = [o.strip().rstrip("/") for o in _raw_origins.split(",") if o.strip()]
+if "https://the-property-scout-two.vercel.app" not in ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS.append("https://the-property-scout-two.vercel.app")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Session-ID", "X-Requested-With"],
+    allow_headers=["*"],
     expose_headers=["X-RateLimit-IP-Limit", "X-RateLimit-Ses-Limit", "Retry-After"],
     max_age=600,
 )
