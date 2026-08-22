@@ -123,9 +123,16 @@ export const useConversation = (options: UseConversationOptions = {}) => {
   }, []);
 
   // WebSocket URL once session is ready
-  const defaultApiUrl = import.meta.env.VITE_API_URL || 'https://web-production-4b14e.up.railway.app';
+  const rawApiUrl = import.meta.env.VITE_API_URL || 'https://web-production-4b14e.up.railway.app';
+  let cleanApiUrl = (rawApiUrl || '').trim();
+  if (cleanApiUrl.startsWith('ttps://')) cleanApiUrl = 'https://' + cleanApiUrl.slice(7);
+  else if (cleanApiUrl.startsWith('ttp://')) cleanApiUrl = 'http://' + cleanApiUrl.slice(6);
+  else if (!cleanApiUrl.startsWith('http://') && !cleanApiUrl.startsWith('https://')) cleanApiUrl = 'https://' + cleanApiUrl;
+  
+  const isSecure = cleanApiUrl.startsWith('https://');
+  const wsHost = cleanApiUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const wsUrl = sessionId
-    ? `${defaultApiUrl.replace(/^http/, 'ws')}/api/voice/stream?session_id=${sessionId}&session_token=${sessionId}`
+    ? `${isSecure ? 'wss' : 'ws'}://${wsHost}/api/voice/stream?session_id=${sessionId}&session_token=${sessionId}`
     : '';
 
   const { status, sendMessage, disconnect } = useWebSocket({
