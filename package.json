@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "Root package for running frontend and backend concurrently",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"venv\\\\Scripts\\\\python -m uvicorn backend.api.app:app --host 0.0.0.0 --port 8000 --reload\"",
-    "build": "cd frontend && npm install && npm run build"
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"venv\\\\Scripts\\\\python -m uvicorn backend.api.app:app --host 0.0.0.0 --port 8000 --reload\""
   },
   "devDependencies": {
     "concurrently": "^10.0.5"
