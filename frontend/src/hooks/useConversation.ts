@@ -42,25 +42,33 @@ export const useConversation = (options: UseConversationOptions = {}) => {
    * the AudioContext so later async .play() calls succeed.
    */
   const unlockAudio = useCallback(() => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
-    }
-    if (audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume().catch(() => {});
+    try {
+      if (!audioCtxRef.current) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          audioCtxRef.current = new AudioCtx();
+        }
+      }
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+    } catch (e) {
+      console.warn('AudioContext unlock warning:', e);
     }
   }, []);
 
   const processAudioQueue = useCallback(async () => {
     if (isPlayingAudioRef.current || audioQueueRef.current.length === 0) return;
 
-    const ctx = audioCtxRef.current;
-    if (!ctx) return;
-
     isPlayingAudioRef.current = true;
     setIsBotSpeaking(true);
 
     const nextBuffer = audioQueueRef.current.shift();
-    if (!nextBuffer) { isPlayingAudioRef.current = false; return; }
+    if (!nextBuffer) {
+      isPlayingAudioRef.current = false;
+      setIsBotSpeaking(false);
+      return;
+    }
 
     const onDone = () => {
       isPlayingAudioRef.current = false;
@@ -72,23 +80,45 @@ export const useConversation = (options: UseConversationOptions = {}) => {
       }
     };
 
+    // 1. Try Web Audio API playback
     try {
-      const decoded = await ctx.decodeAudioData(nextBuffer);
-      const source = ctx.createBufferSource();
-      source.buffer = decoded;
-      source.connect(ctx.destination);
-      source.onended = onDone;
-      activeSourceRef.current = source;
-      source.start(0);
+      if (!audioCtxRef.current) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          audioCtxRef.current = new AudioCtx();
+        }
+      }
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        await audioCtxRef.current.resume();
+      }
+
+      if (audioCtxRef.current) {
+        // Clone buffer to prevent detaching original ArrayBuffer if decode fails
+        const clone = nextBuffer.slice(0);
+        const decoded = await audioCtxRef.current.decodeAudioData(clone);
+        const source = audioCtxRef.current.createBufferSource();
+        source.buffer = decoded;
+        source.connect(audioCtxRef.current.destination);
+        source.onended = onDone;
+        activeSourceRef.current = source;
+        source.start(0);
+        return;
+      }
     } catch (err) {
-      console.error('AudioContext playback error:', err);
-      // Fallback to new Audio() as last resort
+      console.warn('AudioContext decode failed, trying HTML5 Audio fallback:', err);
+    }
+
+    // 2. Fallback to HTML5 Audio element
+    try {
       const blob = new Blob([nextBuffer], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audio.onended = () => { URL.revokeObjectURL(url); onDone(); };
       audio.onerror = () => { URL.revokeObjectURL(url); onDone(); };
-      audio.play().catch(() => onDone());
+      await audio.play();
+    } catch (err) {
+      console.error('All audio playback methods failed:', err);
+      onDone();
     }
   }, []);
 

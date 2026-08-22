@@ -59,6 +59,24 @@ function App() {
     initSession();
   }, [initSession]);
 
+  // Global user interaction listener to unlock AudioContext immediately on first click/tap
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      unlockAudio();
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('touchstart', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [unlockAudio]);
+
   // If we restored a session that already has messages, skip the landing page
   useEffect(() => {
     if (messages.length > 0 && currentView === 'landing') {
