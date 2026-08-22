@@ -9,8 +9,8 @@ interface UseVoiceActivityDetectionProps {
 }
 
 const SILENCE_THRESHOLD_MS = 1500; // 1.5 seconds of silence ends turn
-const VOLUME_THRESHOLD = 8; // Highly sensitive to voice while ignoring baseline hiss
-const SPEECH_FRAMES_REQUIRED = 2; // Fast speech trigger for short words like "2BHK"
+const VOLUME_THRESHOLD = 16; // Ignores room hiss/fans, triggers cleanly on voice
+const SPEECH_FRAMES_REQUIRED = 3; // Stable speech trigger
 
 export const useVoiceActivityDetection = ({
   onSpeechStart,
@@ -189,6 +189,9 @@ export const useVoiceActivityDetection = ({
                 if (finalPhrase && !isBotSpeakingRef.current) {
                   hasCapturedFinalSpeechRef.current = true;
                   console.log('[VAD/STT] Final transcript captured:', finalPhrase);
+                  setIsSpeaking(false);
+                  if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+                  stopRecording();
                   onFinalText?.(finalPhrase);
                 }
               } else {
