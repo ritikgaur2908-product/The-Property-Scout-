@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BookingAPI } from '../../api/bookings';
 
 interface BookingModalProps {
   propertyId: string;
@@ -31,32 +32,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({ propertyId, onClose 
     setConflicts([]);
     
     try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          property_id: propertyId,
-          email: email,
-          visit_date: date,
-          visit_time: formatTimeForBackend(time)
-        })
+      const data = await BookingAPI.createBooking({
+        property_id: propertyId,
+        email: email.trim(),
+        visit_date: date,
+        visit_time: formatTimeForBackend(time)
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setBookingId(data.booking_id);
-        setStep(4);
-      } else if (response.status === 409) {
-        setError(data.detail?.message || "Slot conflict.");
-        setConflicts(data.detail?.alternative_slots || []);
+      setBookingId(data.booking_id);
+      setStep(4);
+    } catch (err: any) {
+      if (err.message && err.message.includes('already booked')) {
+        setError("Slot conflict. Please choose another date or time.");
       } else {
-        setError(data.detail || "An error occurred.");
+        setError(err.message || "Network error, please try again.");
       }
-    } catch (err) {
-      setError("Network error, please try again.");
     } finally {
       setIsSubmitting(false);
     }

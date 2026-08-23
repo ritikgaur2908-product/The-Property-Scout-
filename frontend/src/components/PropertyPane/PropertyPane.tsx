@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fetchApi } from '../../api/client';
 import { FilterBar } from './FilterBar';
 import { PropertyCard } from './PropertyCard';
 import './PropertyPane.css';
@@ -48,27 +49,22 @@ export const PropertyPane: React.FC<PropertyPaneProps> = ({
     setIsSending(true);
     
     try {
-      const response = await fetch('/api/notify/shortlist', {
+      await fetchApi('/api/notify/shortlist', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email,
+          email: email.trim(),
           shortlist: properties
         })
       });
       
-      if (response.ok) {
-        setSendSuccess(true);
-        setTimeout(() => {
-          setShowEmailModal(false);
-          setSendSuccess(false);
-          setEmail('');
-        }, 2000);
-      } else {
-        alert("Failed to send email. Please try again.");
-      }
-    } catch (e) {
-      alert("Network error.");
+      setSendSuccess(true);
+      setTimeout(() => {
+        setShowEmailModal(false);
+        setSendSuccess(false);
+        setEmail('');
+      }, 2000);
+    } catch (e: any) {
+      alert(e.message || "Failed to send email. Please try again.");
     } finally {
       setIsSending(false);
     }

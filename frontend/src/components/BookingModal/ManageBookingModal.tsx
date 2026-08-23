@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BookingAPI } from '../../api/bookings';
 
 interface ManageBookingModalProps {
   onClose: () => void;
@@ -29,18 +30,12 @@ export const ManageBookingModal: React.FC<ManageBookingModalProps> = ({ onClose 
     setStatus('loading');
     setError(null);
     try {
-      const response = await fetch(`/api/bookings/${bookingId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBookingData(data);
-        setStatus('found');
-      } else {
-        setStatus('idle');
-        setError('Booking not found. Please check your ID.');
-      }
-    } catch (err) {
+      const data = await BookingAPI.getBooking(bookingId.trim());
+      setBookingData(data);
+      setStatus('found');
+    } catch (err: any) {
       setStatus('idle');
-      setError('Network error.');
+      setError(err.message || 'Booking not found. Please check your ID.');
     }
   };
 
@@ -49,27 +44,15 @@ export const ManageBookingModal: React.FC<ManageBookingModalProps> = ({ onClose 
     setError(null);
     setConflicts([]);
     try {
-      const response = await fetch(`/api/bookings/${bookingId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          visit_date: date,
-          visit_time: formatTimeForBackend(time)
-        })
+      const data = await BookingAPI.rescheduleBooking(bookingId.trim(), {
+        visit_date: date,
+        visit_time: formatTimeForBackend(time)
       });
-      const data = await response.json();
-      if (response.ok) {
-        setBookingData({ ...bookingData, visit_date: data.visit_date, visit_time: data.visit_time, status: data.status });
-        setStatus('found');
-        alert('Rescheduled successfully!');
-      } else if (response.status === 409) {
-        setError(data.detail?.message || "Slot conflict.");
-        setConflicts(data.detail?.alternative_slots || []);
-      } else {
-        setError(data.detail || "Error rescheduling.");
-      }
-    } catch (err) {
-      setError("Network error.");
+      setBookingData({ ...bookingData, visit_date: data.visit_date, visit_time: data.visit_time, status: data.status });
+      setStatus('found');
+      alert('Rescheduled successfully!');
+    } catch (err: any) {
+      setError(err.message || "Error rescheduling.");
     } finally {
       setIsSubmitting(false);
     }
@@ -79,18 +62,10 @@ export const ManageBookingModal: React.FC<ManageBookingModalProps> = ({ onClose 
     setIsSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`/api/bookings/${bookingId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setStatus('cancelled');
-      } else {
-        const data = await response.json();
-        setError(data.detail || "Error cancelling booking.");
-        setStatus('found');
-      }
-    } catch (err) {
-      setError("Network error.");
+      await BookingAPI.cancelBooking(bookingId.trim());
+      setStatus('cancelled');
+    } catch (err: any) {
+      setError(err.message || "Error cancelling booking.");
       setStatus('found');
     } finally {
       setIsSubmitting(false);
