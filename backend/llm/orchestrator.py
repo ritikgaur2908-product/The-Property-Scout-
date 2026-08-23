@@ -157,7 +157,7 @@ class Orchestrator:
         kwargs: Dict[str, Any] = {
             "model": _PREFERRED_MODEL,
             "messages": messages,
-            "max_tokens": 256,
+            "max_tokens": 512,
             "stream": False,
         }
         if use_tools:
@@ -238,7 +238,7 @@ class Orchestrator:
                         messages=messages,
                         tools=self.tools,
                         tool_choice="auto",
-                        max_tokens=256,
+                        max_tokens=512,
                         stream=False,
                     )
                 except Exception as tool_err:
