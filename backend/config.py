@@ -28,7 +28,8 @@ class Settings:
 
     # LLM Configurations
     LLM_API_KEY: str = (os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY") or "").strip()
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "openai/gpt-oss-20b").strip()
+    _raw_model: str = os.getenv("LLM_MODEL", "openai/gpt-oss-20b").strip()
+    LLM_MODEL: str = "openai/gpt-oss-20b" if "120b" in _raw_model or not _raw_model else _raw_model
 
     # Voice APIs
     STT_API_KEY: str = (os.getenv("STT_API_KEY") or os.getenv("DEEPGRAM_API_KEY") or "").strip()

@@ -39,7 +39,7 @@ _USERFacing_REPLACEMENTS = (
 class Orchestrator:
     def __init__(self):
         self.client = AsyncGroq(api_key=settings.GROQ_API_KEY, max_retries=0)
-        self.model = settings.LLM_MODEL or _TOOL_MODEL
+        self.model = "openai/gpt-oss-20b"
         self.tools = get_tools()
 
     def _sanitize_user_response(self, text: str) -> str:
