@@ -16,6 +16,28 @@ router = APIRouter()
 
 GREETING_TEXT = "Hi! I'm your Property Scout. I'll help you find the perfect rental in Bengaluru. What are you looking for?"
 
+
+def clean_text_for_tts(text: str) -> str:
+    """Normalize currency symbols, non-breaking hyphens, spaces, and formatting for natural Edge-TTS speech."""
+    if not text:
+        return ""
+    # Normalize unicode hyphens, spaces and dashes
+    t = text.replace('\u2011', ' ').replace('\u2013', ' ').replace('\u2014', ' ').replace('\u202f', ' ').replace('\u00a0', ' ')
+    
+    # Convert ₹60,000 / ₹60000 / ₹60k into spoken natural currency
+    t = re.sub(r'₹\s*(\d+),000', r'\1 thousand rupees', t)
+    t = re.sub(r'₹\s*(\d+)k\b', r'\1 thousand rupees', t, flags=re.IGNORECASE)
+    t = re.sub(r'₹\s*(\d+)', r'\1 rupees', t)
+    
+    # Convert -per-month or -per-day
+    t = re.sub(r'(\d+)\s*[-‑]?per[-‑]?month', r'\1 per month', t, flags=re.IGNORECASE)
+    
+    # Strip markdown symbols & numbered list prefixes
+    t = re.sub(r'^\s*\d+[\.\)]\s*', '', t)
+    t = re.sub(r'\n\s*\d+[\.\)]\s*', ' ', t)
+    t = re.sub(r'[*#_~`]', '', t)
+    return t.strip()
+
 # Pattern for a valid UUID session token
 _UUID_RE = re.compile(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
@@ -211,11 +233,7 @@ async def voice_stream(
                 asyncio.create_task(enrich_properties_background(state.shortlist))
 
             if full_response:
-                import re
-                # Clean markdown and numbered list prefixes so TTS doesn't read "1.", "2.", "asterisk", etc.
-                clean_tts_text = re.sub(r'^\s*\d+[\.\)]\s*', '', full_response)
-                clean_tts_text = re.sub(r'\n\s*\d+[\.\)]\s*', ' ', clean_tts_text)
-                clean_tts_text = re.sub(r'[*#_~`]', '', clean_tts_text).strip()
+                clean_tts_text = clean_text_for_tts(full_response)
                 loop = asyncio.get_event_loop()
                 audio_bytes = await loop.run_in_executor(None, tts.synthesize_sync, clean_tts_text)
                 if audio_bytes:

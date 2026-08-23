@@ -171,7 +171,7 @@ export const useConversation = (options: UseConversationOptions = {}) => {
         }
       } else if (data.type === 'property_update') {
         setShortlist(prev => prev.map(p => 
-          p.id === data.property_id 
+          String(p.id).toLowerCase() === String(data.property_id).toLowerCase()
             ? { ...p, amenities: data.amenities, neighborhoodInsights: data.neighborhoodInsights }
             : p
         ));
