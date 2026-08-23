@@ -104,9 +104,34 @@ export const PropertyCard: React.FC<PropertyCardProps & { rooms?: string }> = ({
             </button>
 
             {showSources && (
-              <div className="property-sources animate-fade-in-up">
-                <p className="text-xs text-muted mb-1">Information synthesized from:</p>
-                <a href="#" className="property-source-link text-xs">Verified RAG Data</a>
+              <div className="property-sources animate-fade-in-up mt-2 p-2 rounded bg-opacity-10 bg-white">
+                <p className="text-xs text-muted font-medium mb-1.5">Information synthesized from:</p>
+                <div className="flex flex-col gap-1 text-xs">
+                  <a 
+                    href="https://blrexplorer.littlemadcow.xyz/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="property-source-link flex items-center gap-1 hover:underline text-indigo-400"
+                  >
+                    🔗 BLR Explorer — Bengaluru Neighborhood Guides
+                  </a>
+                  <a 
+                    href="https://citizenmatters.in/city/bengaluru/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="property-source-link flex items-center gap-1 hover:underline text-indigo-400"
+                  >
+                    🔗 Citizen Matters — Bengaluru Civic & Infrastructure Reports
+                  </a>
+                  <a 
+                    href="https://www.reddit.com/r/bangalore/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="property-source-link flex items-center gap-1 hover:underline text-indigo-400"
+                  >
+                    🔗 r/bangalore — Verified Resident Feedback & Public Discussions
+                  </a>
+                </div>
               </div>
             )}
           </>
