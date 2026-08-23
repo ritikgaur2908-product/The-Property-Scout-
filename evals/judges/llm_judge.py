@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────────────────────
 # Judge model uses Groq's active high-reasoning model: openai/gpt-oss-120b
 # ──────────────────────────────────────────────────────────────────────────────
-_JUDGE_MODEL = "openai/gpt-oss-120b"
+_JUDGE_MODEL = "openai/gpt-oss-20b"
 
 
 def _get_api_key() -> str:
